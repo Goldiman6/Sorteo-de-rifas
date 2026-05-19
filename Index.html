@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Rifa - 33 Personas</title>
+    <style>
+        :root {
+            --bg-principal: #f0f2f5;
+            --bg-card: #ffffff;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --ticket-border: #e5e7eb;
+            --ticket-accent: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-principal);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            color: var(--text-main);
+            font-size: 28px;
+            text-align: center;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin-top: 0;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .controls {
+            background: var(--bg-card);
+            padding: 24px 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            margin-bottom: 40px;
+            border: 1px solid #e5e7eb;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        #tickets-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .ticket {
+            background: var(--bg-card);
+            border: 1px solid var(--ticket-border);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ticket:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Perforaciones de boleto */
+        .ticket::before, .ticket::after {
+            content: '';
+            position: absolute;
+            top: 95px; /* Ajustado por el nuevo tamaño del header */
+            width: 16px;
+            height: 16px;
+            background-color: var(--bg-principal);
+            border-radius: 50%;
+            z-index: 2;
+        }
+        .ticket::before { left: -8px; }
+        .ticket::after { right: -8px; }
+
+        .ticket-header {
+            text-align: center;
+            border-bottom: 2px dashed #d1d5db;
+            padding-bottom: 18px;
+            margin-bottom: 18px;
+        }
+
+        .ticket-header h3 {
+            margin: 0 0 6px 0;
+            color: var(--ticket-accent);
+            font-size: 20px;
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        .ticket-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            background-color: #f3f4f6;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .ticket-header span {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        .number-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 8px 0;
+            border-radius: 6px;
+            font-weight: 700;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            color: var(--text-main);
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .controls, h1, p.subtitle { display: none; }
+            .ticket {
+                background: white;
+                border: 2px solid #000;
+                box-shadow: none;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+                float: left;
+                width: 45%;
+                margin-right: 4%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Generador de Rifa Comercial</h1>
+    <p class="subtitle">Asignación aleatoria y equitativa para 33 participantes</p>
+
+    <div class="controls">
+        <button onclick="generarRifa()">Sorteas y Generar Boletas</button>
+    </div>
+
+    <div id="tickets-container"></div>
+
+    <script {nonce}>
+        // 1. LISTA PREDEFINIDA DE 33 PERSONAS
+        // Puedes cambiar estos nombres directamente aquí. Asegúrate de mantener exactamente 33.
+        const listaPersonas = [
+            "Carlos Mendoza", "Ana María Silva", "Juan Pablo Duarte", "Diana Carolina", 
+            "Luis Fernando", "Martha Gómez", "Andrés Felipe", "Sandra Milena",
+            "Jorge Eliécer", "Claudia Patricia", "Gustavo Adolfo", "Patricia Lara",
+            "Sergio Luis", "Gloria Inés", "Ricardo Antonio", "Verónica Castro",
+            "Alejandro Sanz", "Paola Andrea", "Mauricio Tobón", "Natalia París",
+            "Fabio Restrepo", "Olga Lucía", "Héctor Lavoe", "Ángela María",
+            "Diego Maradona", "Liliana Marcela", "Jairo Aníbal", "Esperanza Gómez",
+            "Camilo Sesto", "Adriana Lucía", "Gonzalo Jiménez", "Blanca Nieves",
+            "Jostin Santiago"
+        ];
+
+        function generarRifa() {
+            const container = document.getElementById('tickets-container');
+            
+            // Forzamos que la cantidad siempre sea el largo de nuestro array (33)
+            const cantidad = listaPersonas.length; 
+
+            // 2. Crear el pool de números del 00 al 99
+            let todosNumeros = [];
+            for (let i = 0; i < 100; i++) {
+                todosNumeros.push(i < 10 ? '0' + i : i.toString());
+            }
+
+            // 3. Barajar el pool completo aleatoriamente
+            for (let i = todosNumeros.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [todosNumeros[i], todosNumeros[j]] = [todosNumeros[j], todosNumeros[i]];
+            }
+
+            // 4. Lógica de distribución matemática
+            const baseCount = Math.floor(100 / cantidad); // 100 / 33 = 3 números base por persona
+            const remainder = 100 % cantidad;           // 100 % 33 = 1 residuo (11 personas tendrán 4 números)
+
+            container.innerHTML = '';
+            let indiceActual = 0;
+
+            // 5. Generar los cartones asignando los nombres
+            for (let i = 0; i < cantidad; i++) {
+                let numerosEnEsteTicket = (i < remainder) ? baseCount + 1 : baseCount;
+                let numerosTicket = todosNumeros.slice(indiceActual, indiceActual + numerosEnEsteTicket);
+                
+                // Ordenar estéticamente los números asignados a este boleto
+                numerosTicket.sort((a, b) => parseInt(a) - parseInt(b));
+                
+                indiceActual += numerosEnEsteTicket;
+
+                // Tomamos el nombre correspondiente del array
+                let nombrePersona = listaPersonas[i];
+
+                let ticketHTML = `
+                <div class="ticket">
+                    <div class="ticket-header">
+                        <h3>BOLETA #${(i + 1).toString().padStart(2, '0')}</h3>
+                        <div class="ticket-name">${nombrePersona}</div>
+                        <span>${numerosEnEsteTicket} números asignados</span>
+                    </div>
+                    <div class="numbers-grid">
+                        ${numerosTicket.map(num => `<div class="number-box">${num}</div>`).join('')}
+                    </div>
+                </div>
+                `;
+
+                container.innerHTML += ticketHTML;
+            }
+        }
+
+        // Ejecutar automáticamente al abrir o recargar la página
+        window.onload = generarRifa;
+    </script>
+</body>
+
+</html>
